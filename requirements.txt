@@ -1,10 +1,10 @@
-flask
-markdown2
-python-docx
-reportlab
+streamlit
 pandas
 matplotlib
-seaborn
+python-docx
+reportlab
+sentence-transformers
 scikit-learn
+torch
+transformers
 numpy
-streamlit

@@ -1,69 +1,117 @@
-# RequirementsAnalyzer_ML
-Requirements analyzer for quality and conflicts
+# AI-Assisted Requirement Analysis Tool (GraphRAG)
 
-Type your requirements in the Request window and hit analyze. Here is an example:
+This project is a production-oriented, modular Python application for requirement engineering workflows using GraphRAG (Graph Retrieval-Augmented Generation).
 
+It provides:
+- Requirement ingestion from a local `input/` directory (`.txt` and `.md`).
+- Conflict detection against existing requirement context.
+- EARS compliance validation with suggested rewrites.
+- Natural language Q&A over the requirement pool.
+- Dynamic relational graph visualization via Mermaid.js in Streamlit.
 
-REQ-MC-001 - The motor controller shall start the motor within 100 ms of receiving a valid START command.
+## Tech Stack
+- UI: Streamlit
+- Graph rendering: Mermaid.js (embedded in Streamlit)
+- LLM + embeddings: OpenAI API
+- Vector database: FAISS (local, open-source)
+- Config: `.env` via `python-dotenv`
 
-REQ-MC-002 - The motor controller shall stop the motor within 50 ms of receiving a valid STOP command.
+All dependencies are open-source except the OpenAI API endpoint, as required.
 
-REQ-MC-003 - The motor controller shall maintain motor speed at the commanded value ±2% under normal operating conditions.
+## Project Structure
 
-REQ-MC-004 - The motor controller shall update the PWM output at a minimum frequency of 20 kHz.
+```text
+.
+├── .env
+├── .gitignore
+├── README.md
+├── requirements.txt
+├── app.py
+├── core/
+│   ├── __init__.py
+│   ├── graph_rag.py
+│   ├── ears_checker.py
+│   └── analyzer.py
+└── prompts/
+    ├── __init__.py
+    ├── conflict_system.txt
+    ├── ears_system.txt
+    ├── entity_system.txt
+    └── qna_system.txt
+```
 
-REQ-MC-005 - The motor controller shall execute the speed control loop every 1 ms with a maximum jitter of 100 µs.
+## Installation
 
-REQ-MC-006 - The motor controller shall achieve a commanded speed change from 0 RPM to 3000 RPM in less than 200 ms.
+1. Create and activate a virtual environment.
+2. Install dependencies:
 
-REQ-MC-007 - The motor controller shall detect an overcurrent condition and disable motor power within 10 ms.
+```bash
+pip install -r requirements.txt
+```
 
-REQ-MC-008 - The motor controller shall report a fault condition to the supervisory controller within 20 ms of fault detection.
+## Environment Variables
 
-REQ-MC-009 - The motor controller shall acknowledge all communication messages within 5 ms of receipt.
+Create/update `.env` with:
 
-REQ-MC-010 - The motor controller shall accelerate the motor from 0 RPM to 3000 RPM within 100 ms.
+```env
+OPENAI_API_KEY=your_openai_api_key_here
+OPENAI_MODEL=gpt-4o-mini
+INPUT_FOLDER_PATH=input
+```
 
-REQ-MC-011 - The motor controller shall limit acceleration to 10,000 RPM/s to prevent mechanical stress.
+## Usage
 
-REQ-MC-012 - The motor controller shall enter a low-power mode within 5 ms of motor shutdown.
+1. Ensure your requirement files exist in `input/` (optional at first run).
+2. Launch the app:
 
-REQ-MC-013 - The motor controller shall continue transmitting motor status messages every 1 ms for 100 ms after shutdown.
+```bash
+streamlit run app.py
+```
 
-REQ-MC-014 - The motor controller shall respond quickly to user commands.
+3. In the UI:
+- Use **New Requirement** to upload or paste a new requirement.
+- Run **Analyze Requirement** to generate conflict and EARS outputs.
+- Use **Add Requirement to Knowledge Base** to persist and index the requirement.
+- Review **Conflict Report** and **EARS Validation** tabs.
+- Ask contextual questions in **Requirement Q&A**.
+- Inspect graph topology in **Relational Graph**.
 
-The tool outputs: 
-Satisfaction Score: 0.85
-ambiguity
-Ambiguous wording detected: 'REQ-MC-014 - The motor controller shall respond quickly to user commands.' (quick)
-authentication
-completeness
-conflicts
-duplicates
-encryption
-No encryption requirement detected.
-performance
-semantic_duplicates
-Possible semantic duplicate: 'REQ-MC-006 - The motor controller shall achieve a commanded speed change from 0 RPM to 3000 RPM in less than 200 ms.' 'REQ-MC-010 - The motor controller shall accelerate the motor from 0 RPM to 3000 RPM within 100 ms.'
-testability
-Analysis Log
-Requirement Analysis
-REQ-MC-001 - The motor controller shall start the motor within 100 ms of receiving a valid START command.
-REQ-MC-002 - The motor controller shall stop the motor within 50 ms of receiving a valid STOP command.
-REQ-MC-003 - The motor controller shall maintain motor speed at the commanded value ±2% under normal operating conditions.
-REQ-MC-004 - The motor controller shall update the PWM output at a minimum frequency of 20 kHz.
-REQ-MC-005 - The motor controller shall execute the speed control loop every 1 ms with a maximum jitter of 100 µs.
-REQ-MC-006 - The motor controller shall achieve a commanded speed change from 0 RPM to 3000 RPM in less than 200 ms.
-REQ-MC-007 - The motor controller shall detect an overcurrent condition and disable motor power within 10 ms.
-REQ-MC-008 - The motor controller shall report a fault condition to the supervisory controller within 20 ms of fault detection.
-REQ-MC-009 - The motor controller shall acknowledge all communication messages within 5 ms of receipt.
-REQ-MC-010 - The motor controller shall accelerate the motor from 0 RPM to 3000 RPM within 100 ms.
-REQ-MC-011 - The motor controller shall limit acceleration to 10,000 RPM/s to prevent mechanical stress.
-REQ-MC-012 - The motor controller shall enter a low-power mode within 5 ms of motor shutdown.
-REQ-MC-013 - The motor controller shall continue transmitting motor status messages every 1 ms for 100 ms after shutdown.
-REQ-MC-014 - The motor controller shall respond quickly to user commands.
-REQ-MC-015 - The motor controller shall sample motor current every 50 µs.
-REQ-MC-016 - The motor controller shall complete all control calculations within 20 µs on a processor with a maximum utilization of 30%
-REQ-MC-015 - The motor controller shall sample motor current every 50 µs.
+## GraphRAG Technical Summary
 
-REQ-MC-016 - The motor controller shall complete all control calculations within 20 µs on a processor with a maximum utilization of 30%.
+### Ingestion and Indexing
+- On startup, the engine scans `input/` for `.txt` and `.md` files.
+- It splits file content into requirement statements and deduplicates by text.
+- For each requirement, it performs entity extraction (`systems`, `users`, `actions`, `constraints`, `relationships`).
+- Requirement text embeddings are generated with OpenAI and normalized.
+- Embeddings are indexed in local FAISS (`IndexFlatIP`) for cosine-style retrieval.
+
+### Graph Construction
+- Every requirement is represented as a requirement node.
+- Extracted entities are represented as typed nodes.
+- `contains` edges connect requirement nodes to entity nodes.
+- Extracted inter-entity relationships are added as labeled edges.
+
+### Hybrid Retrieval
+- Query embedding -> FAISS nearest requirements.
+- Graph neighbors/edges around retrieved requirement nodes are collected.
+- Combined contextual payload is passed to LLM for grounded generation.
+
+### Prompt Architecture
+- System prompts are externalized in `prompts/` files.
+- Every AI call uses strict separation:
+  - System prompt loaded from file.
+  - Runtime user prompt assembled with context placeholders/content.
+
+### Reliability
+- OpenAI chat and embedding calls handle timeout/network/API exceptions.
+- File reading/writing uses guarded behavior and UTF-8 handling.
+- Index and metadata are persisted locally under `vector_store/`.
+
+## Security
+- No API keys are hardcoded.
+- `.env` is ignored by Git.
+- Local requirement files in `input/` are ignored by Git.
+
+## Notes
+- If the OpenAI API is unavailable, conflict/EARS checks return fallback-safe outputs.
+- You can clear local state by removing `vector_store/` and restarting.

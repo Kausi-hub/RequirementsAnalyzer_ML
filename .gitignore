@@ -1,0 +1,8 @@
+.env
+input/*.txt
+input/*.md
+__pycache__/
+*.pyc
+.faiss/
+vector_store/
+.streamlit/
